@@ -16,11 +16,27 @@
         button { width: 100%; background: #27ae60; color: white; border: none; padding: 14px; margin-top: 20px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         button:hover { background: #219150; }
         
-        #label-preview { background: white; border: 3px double #333; padding: 15px; width: 100%; max-width: 320px; margin: 25px auto; text-align: center; display: none; box-sizing: border-box; }
-        .label-title { font-size: 18px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #333; padding-bottom: 5px; margin-bottom: 10px; }
-        .label-details { text-align: right; font-size: 13px; line-height: 1.6; margin-bottom: 12px; color: #333; }
-        #qrcode-container { display: flex; justify-content: center; margin: 10px 0; }
-        .download-hint { font-size: 12px; color: #e74c3c; font-weight: bold; margin-top: 10px; display: none; }
+        /* تصميم ملصق الاستوديو الاحترافي - مربع الباركود وتحته اسم المعمل فقط */
+        #label-preview { 
+            background: white; 
+            border: 2px solid #000; 
+            padding: 15px; 
+            width: 220px; 
+            margin: 25px auto; 
+            text-align: center; 
+            display: none; 
+            box-sizing: border-box; 
+        }
+        .studio-title { 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: #000; 
+            margin-top: 10px; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        #qrcode-container { display: flex; justify-content: center; margin: 0; }
+        .download-hint { font-size: 13px; color: #e74c3c; font-weight: bold; margin-top: 15px; display: none; }
+        #final-mobile-image { max-width: 220px; margin: 15px auto; display: block; border: 2px dashed #27ae60; padding: 5px; background: white; }
 
         #customer-view { display: none; max-width: 450px; background: white; margin: 20px auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-top: 6px solid #27ae60; box-sizing: border-box; }
         .customer-title { font-size: 22px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
@@ -49,24 +65,18 @@
         <label>رابط صورة قطعة المنتج:</label>
         <input type="url" id="image_url" placeholder="ضع رابط الصورة المباشر هنا">
         
-        <button onclick="generateLabel()">توليد وحفظ ملصق الهاتف</button>
+        <button onclick="generateLabel()">توليد وحفظ ملصق الاستوديو</button>
     </div>
 
     <div id="label-preview">
-        <div class="label-title">معمل نجارة ابو علي</div>
-        <div class="label-details">
-            <strong>مدير المعمل :</strong> عماد لقمان <br>
-            <strong>رقم تلفون الإدارة:</strong> 07510136788 و 07701885020 <br>
-            <strong>نوع الأثاث:</strong> <span id="lbl_type"></span> <br>
-            <strong>تاريخ الطلب:</strong> <span id="lbl_order"></span> <br>
-            <strong>تاريخ الإنتاج:</strong> <span id="lbl_prod"></span>
-        </div>
         <div id="qrcode-container">
             <canvas id="qr-canvas"></canvas>
         </div>
-        <div style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">امسح كود الـ QR لفتح صفحة الفاتورة الخاصة بالزبون</div>
-        <div id="btn-hint" class="download-hint">اضغط مطولاً على الملصق المولد بالأسفل ثم اختر "حفظ الصورة"</div>
+        <div class="studio-title">معمل نجارة ابو علي</div>
     </div>
+    
+    <div id="btn-hint" class="download-hint">جاهز للحفظ! اضغط مطولاً على الصورة بالأسفل واختر "حفظ في الاستوديو":</div>
+    <div id="image-append-container"></div>
 </div>
 
 <div id="customer-view">
@@ -116,48 +126,41 @@
             return; 
         }
 
-        document.getElementById('lbl_type').innerText = type;
-        document.getElementById('lbl_order').innerText = orderDate;
-        document.getElementById('lbl_prod').innerText = prodDate;
-        
         const fixedLink = `https://abdullah-dhanoun.github.io/barcode/barcode.html?view=customer&type=${encodeURIComponent(type)}&order=${encodeURIComponent(orderDate)}&prod=${encodeURIComponent(prodDate)}&img=${encodeURIComponent(imgUrl)}`;
 
+        // توليد الـ QR بكفاءة عالية وبحجم مناسب للملصق
         var qr = new QRious({
             element: document.getElementById('qr-canvas'),
             value: fixedLink,
-            size: 160
+            size: 180
         });
 
         const previewDiv = document.getElementById('label-preview');
-        previewDiv.style.display = 'block';
+        previewDiv.style.display = 'block'; // تفعيل مؤقت للتحويل
 
-        // تنظيف أي صورة محفوظة سابقاً لتوليد الملصق الجديد بدقة
-        const oldImg = document.getElementById('final-mobile-image');
-        if(oldImg) oldImg.remove();
+        // تنظيف أي ملصق قديم من الشاشة
+        document.getElementById('image-append-container').innerHTML = '';
 
         setTimeout(() => {
-            html2canvas(previewDiv, { useCORS: true, scale: 2 }).then(canvas => {
+            html2canvas(previewDiv, { useCORS: true, scale: 3 }).then(canvas => {
                 const imgData = canvas.toDataURL("image/png");
                 
-                // إنشاء عنصر صورة مخصص للهواتف لتسهيل الحفظ باللمس المطول
+                // إنشاء الصورة النهائية النظيفة لـ الاستوديو
                 const mobileImg = document.createElement('img');
                 mobileImg.id = 'final-mobile-image';
                 mobileImg.src = imgData;
-                mobileImg.style.width = '100%';
-                mobileImg.style.marginTop = '15px';
-                mobileImg.style.border = '2px solid #27ae60';
-                mobileImg.style.borderRadius = '4px';
                 
-                previewDiv.appendChild(mobileImg);
+                document.getElementById('image-append-container').appendChild(mobileImg);
                 document.getElementById('btn-hint').style.display = 'block';
-                
-                // محاولة التحميل التلقائي للملف
+                previewDiv.style.display = 'none'; // إعادة إخفاء الأصل البرمجي
+
+                // تنزيل تلقائي احتياطي
                 const link = document.createElement('a');
                 link.download = `ملصق-${type}.png`;
                 link.href = imgData;
                 link.click();
             });
-        }, 600);
+        }, 500);
     }
 </script>
 

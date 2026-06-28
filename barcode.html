@@ -8,20 +8,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 500px; background: white; padding: 20px; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; margin-bottom: 20px; font-size: 22px; }
-        label { display: block; text-align: right; margin: 12px 0 5px; font-weight: bold; color: #444; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; background: #27ae60; color: white; border: none; padding: 12px; margin-top: 20px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; text-align: center; }
+        .container { max-width: 480px; background: white; padding: 20px; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+        h2 { color: #2c3e50; margin-bottom: 20px; font-size: 20px; }
+        label { display: block; text-align: right; margin: 12px 0 5px; font-weight: bold; color: #444; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; -webkit-appearance: none; }
+        button { width: 100%; background: #27ae60; color: white; border: none; padding: 14px; margin-top: 20px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         button:hover { background: #219150; }
         
-        #label-preview { background: white; border: 3px double #333; padding: 15px; width: 320px; margin: 30px auto; text-align: center; display: none; box-sizing: border-box; }
+        #label-preview { background: white; border: 3px double #333; padding: 15px; width: 100%; max-width: 320px; margin: 25px auto; text-align: center; display: none; box-sizing: border-box; }
         .label-title { font-size: 18px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #333; padding-bottom: 5px; margin-bottom: 10px; }
-        .label-details { text-align: right; font-size: 12px; line-height: 1.6; margin-bottom: 15px; }
-        #qrcode-container { display: flex; justify-content: center; margin: 15px 0; }
+        .label-details { text-align: right; font-size: 13px; line-height: 1.6; margin-bottom: 12px; color: #333; }
+        #qrcode-container { display: flex; justify-content: center; margin: 10px 0; }
+        .download-hint { font-size: 12px; color: #e74c3c; font-weight: bold; margin-top: 10px; display: none; }
 
-        #customer-view { display: none; max-width: 450px; background: white; margin: 30px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-top: 6px solid #27ae60; }
+        #customer-view { display: none; max-width: 450px; background: white; margin: 20px auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-top: 6px solid #27ae60; box-sizing: border-box; }
         .customer-title { font-size: 22px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
         .customer-subtitle { font-size: 13px; color: #7f8c8d; margin-bottom: 20px; }
         .info-box { text-align: right; background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-right: 4px solid #27ae60; }
@@ -48,7 +49,7 @@
         <label>رابط صورة قطعة المنتج:</label>
         <input type="url" id="image_url" placeholder="ضع رابط الصورة المباشر هنا">
         
-        <button onclick="generateLabel()">توليد الملصق وحفظه كملف</button>
+        <button onclick="generateLabel()">توليد وحفظ ملصق الهاتف</button>
     </div>
 
     <div id="label-preview">
@@ -64,6 +65,7 @@
             <canvas id="qr-canvas"></canvas>
         </div>
         <div style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">امسح كود الـ QR لفتح صفحة الفاتورة الخاصة بالزبون</div>
+        <div id="btn-hint" class="download-hint">اضغط مطولاً على الملصق المولد بالأسفل ثم اختر "حفظ الصورة"</div>
     </div>
 </div>
 
@@ -118,7 +120,6 @@
         document.getElementById('lbl_order').innerText = orderDate;
         document.getElementById('lbl_prod').innerText = prodDate;
         
-        // تم ربط الكود برابط حسابك الحقيقي والمباشر بنجاح
         const fixedLink = `https://abdullah-dhanoun.github.io/barcode/barcode.html?view=customer&type=${encodeURIComponent(type)}&order=${encodeURIComponent(orderDate)}&prod=${encodeURIComponent(prodDate)}&img=${encodeURIComponent(imgUrl)}`;
 
         var qr = new QRious({
@@ -130,14 +131,33 @@
         const previewDiv = document.getElementById('label-preview');
         previewDiv.style.display = 'block';
 
+        // تنظيف أي صورة محفوظة سابقاً لتوليد الملصق الجديد بدقة
+        const oldImg = document.getElementById('final-mobile-image');
+        if(oldImg) oldImg.remove();
+
         setTimeout(() => {
-            html2canvas(previewDiv).then(canvas => {
+            html2canvas(previewDiv, { useCORS: true, scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL("image/png");
+                
+                // إنشاء عنصر صورة مخصص للهواتف لتسهيل الحفظ باللمس المطول
+                const mobileImg = document.createElement('img');
+                mobileImg.id = 'final-mobile-image';
+                mobileImg.src = imgData;
+                mobileImg.style.width = '100%';
+                mobileImg.style.marginTop = '15px';
+                mobileImg.style.border = '2px solid #27ae60';
+                mobileImg.style.borderRadius = '4px';
+                
+                previewDiv.appendChild(mobileImg);
+                document.getElementById('btn-hint').style.display = 'block';
+                
+                // محاولة التحميل التلقائي للملف
                 const link = document.createElement('a');
                 link.download = `ملصق-${type}.png`;
-                link.href = canvas.toDataURL();
+                link.href = imgData;
                 link.click();
             });
-        }, 500);
+        }, 600);
     }
 </script>
 

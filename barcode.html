@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام باركود معمل الأثاث والنجارة</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 500px; background: white; padding: 20px; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; margin-bottom: 20px; font-size: 22px; }
+        label { display: block; text-align: right; margin: 12px 0 5px; font-weight: bold; color: #444; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; background: #27ae60; color: white; border: none; padding: 12px; margin-top: 20px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #219150; }
+        
+        #label-preview { background: white; border: 3px double #333; padding: 15px; width: 320px; margin: 30px auto; text-align: center; display: none; box-sizing: border-box; }
+        .label-title { font-size: 18px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #333; padding-bottom: 5px; margin-bottom: 10px; }
+        .label-details { text-align: right; font-size: 12px; line-height: 1.6; margin-bottom: 15px; }
+        #qrcode-container { display: flex; justify-content: center; margin: 15px 0; }
+
+        /* تنسيق الصفحة الخاصة بالزبون */
+        #customer-view { display: none; max-width: 450px; background: white; margin: 30px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-top: 6px solid #27ae60; }
+        .customer-title { font-size: 22px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        .customer-subtitle { font-size: 13px; color: #7f8c8d; margin-bottom: 20px; }
+        .info-box { text-align: right; background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-right: 4px solid #27ae60; }
+        .info-row { margin-bottom: 10px; font-size: 15px; color: #333; border-bottom: 1px dashed #e0e0e0; padding-bottom: 5px; }
+        .info-row strong { color: #2c3e50; }
+        .product-image { max-width: 100%; border-radius: 8px; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div id="admin-view">
+    <div class="container">
+        <h2>لوحة تحكم ملصقات المعمل الذاتية</h2>
+        
+        <label>نوع الأثاث:</label>
+        <input type="text" id="furniture_type" placeholder="مثال: غرفة نوم ملكي صاج / قنافة زاوية">
+        
+        <label>تاريخ طلب المنتج:</label>
+        <input type="date" id="order_date">
+        
+        <label>تاريخ الإنتاج الحالي:</label>
+        <input type="date" id="production_date">
+        
+        <label>رابط صورة قطعة الأثاث على الإنترنت:</label>
+        <input type="url" id="image_url" placeholder="ضع رابط الصورة المباشر هنا">
+        
+        <button onclick="generateLabel()">توليد الملصق وحفظه كملف</button>
+    </div>
+
+    <div id="label-preview">
+        <div class="label-title">معمل الأثاث والنجارة الفاخرة</div>
+        <div class="label-details">
+            <strong>مدير المعمل المسؤول:</strong> أبو أحمد <br>
+            <strong>رقم تلفون الإدارة:</strong> 07700000000 <br>
+            <strong>نوع الأثاث:</strong> <span id="lbl_type"></span> <br>
+            <strong>تاريخ الطلب:</strong> <span id="lbl_order"></span> <br>
+            <strong>تاريخ الإنتاج:</strong> <span id="lbl_prod"></span>
+        </div>
+        <div id="qrcode-container">
+            <canvas id="qr-canvas"></canvas>
+        </div>
+        <div style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">امسح كود الـ QR لفتح صفحة الفاتورة الخاصة بالزبون</div>
+    </div>
+</div>
+
+<div id="customer-view">
+    <div class="customer-title">معمل الأثاث والنجارة الفاخرة</div>
+    <div class="customer-subtitle">شهادة الضمان وبطاقة أصالة المنتج المعتمدة</div>
+    
+    <div class="info-box">
+        <div class="info-row"><strong>نوع قطعة الأثاث:</strong> <span id="c_type"></span></div>
+        <div class="info-row"><strong>تاريخ طلب الزبون:</strong> <span id="c_order"></span></div>
+        <div class="info-row"><strong>تاريخ الإنتاج والجاهزية:</strong> <span id="c_prod"></span></div>
+        <div class="info-row"><strong>إدارة المعمل المسؤول:</strong> أبو أحمد</div>
+        <div class="info-row"><strong>رقم هاتف الإدارة:</strong> 07700000000</div>
+    </div>
+    
+    <div id="image-container"></div>
+    <div style="font-size: 12px; color: #bdc3c7; margin-top: 25px;">شكراً لثقتكم بمعملنا • صنع بأعلى معايير الجودة العالية</div>
+</div>
+
+<script>
+    // وضع تاريخ اليوم تلقائياً
+    document.getElementById('production_date').valueAsDate = new Date();
+
+    // فحص الرابط: إذا كان يحتوي على بيانات زبون، يتم إخفاء لوحة التحكم وإظهار الصفحة الخاصة فوراً
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('view')) {
+        document.getElementById('admin-view').style.display = 'none';
+        document.getElementById('customer-view').style.display = 'block';
+        
+        document.getElementById('c_type').innerText = urlParams.get('type');
+        document.getElementById('c_order').innerText = urlParams.get('order');
+        document.getElementById('c_prod').innerText = urlParams.get('prod');
+        
+        const imgUrl = urlParams.get('img');
+        if(imgUrl && imgUrl !== 'null' && imgUrl !== '') {
+            document.getElementById('image-container').innerHTML = `<img class="product-image" src="${imgUrl}" alt="صورة الأثاث">`;
+        } else {
+            document.getElementById('image-container').innerHTML = `<p style="font-size:13px; color:#aaa; margin-top:15px;">لا توجد صورة مرفقة لهذه القطعة</p>`;
+        }
+    }
+
+    function generateLabel() {
+        const type = document.getElementById('furniture_type').value;
+        const orderDate = document.getElementById('order_date').value;
+        const prodDate = document.getElementById('production_date').value;
+        const imgUrl = document.getElementById('image_url').value;
+        
+        if(!type) { 
+            alert('الرجاء كتابة نوع الأثاث أولاً!'); 
+            return; 
+        }
+
+        document.getElementById('lbl_type').innerText = type;
+        document.getElementById('lbl_order').innerText = orderDate;
+        document.getElementById('lbl_prod').innerText = prodDate;
+        
+        // بناء رابط ذكي يوجه الموبايل إلى "الصفحة الخاصة بالزبون" بداخل نفس الملف
+        // قمنا بنقل الرابط إلى مسار الملف الحالي مع تمرير البيانات كمتغيرات آمنة وخفيفة
+        const currentFileUrl = window.location.href.split('?')[0];
+        const finalLink = `${currentFileUrl}?view=customer&type=${encodeURIComponent(type)}&order=${encodeURIComponent(orderDate)}&prod=${encodeURIComponent(prodDate)}&img=${encodeURIComponent(imgUrl)}`;
+
+        // توليد الباركود بشكل خفيف ونظيف لتقرأه الكاميرا فوراً
+        var qr = new QRious({
+            element: document.getElementById('qr-canvas'),
+            value: finalLink,
+            size: 160
+        });
+
+        const previewDiv = document.getElementById('label-preview');
+        previewDiv.style.display = 'block';
+
+        setTimeout(() => {
+            html2canvas(previewDiv).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ملصق-${type}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }, 500);
+    }
+</script>
+
+</body>
+</html>

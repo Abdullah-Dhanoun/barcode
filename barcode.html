@@ -21,7 +21,6 @@
         .label-details { text-align: right; font-size: 12px; line-height: 1.6; margin-bottom: 15px; }
         #qrcode-container { display: flex; justify-content: center; margin: 15px 0; }
 
-        /* تنسيق الصفحة الخاصة بالزبون */
         #customer-view { display: none; max-width: 450px; background: white; margin: 30px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-top: 6px solid #27ae60; }
         .customer-title { font-size: 22px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
         .customer-subtitle { font-size: 13px; color: #7f8c8d; margin-bottom: 20px; }
@@ -38,25 +37,25 @@
         <h2>لوحة تحكم ملصقات المعمل الذاتية</h2>
         
         <label>نوع الأثاث:</label>
-        <input type="text" id="furniture_type" placeholder="مثال: غرفة نوم ملكي صاج / قنافة زاوية">
+        <input type="text" id="furniture_type" placeholder="نوع المنتج">
         
-        <label>تاريخ طلب المنتج:</label>
+        <label>تاريخ الطلب:</label>
         <input type="date" id="order_date">
         
-        <label>تاريخ الإنتاج الحالي:</label>
+        <label>تاريخ الإنتاج:</label>
         <input type="date" id="production_date">
         
-        <label>رابط صورة قطعة الأثاث على الإنترنت:</label>
+        <label>رابط صورة قطعة المنتج:</label>
         <input type="url" id="image_url" placeholder="ضع رابط الصورة المباشر هنا">
         
         <button onclick="generateLabel()">توليد الملصق وحفظه كملف</button>
     </div>
 
     <div id="label-preview">
-        <div class="label-title">معمل الأثاث والنجارة الفاخرة</div>
+        <div class="label-title">معمل نجارة ابو علي</div>
         <div class="label-details">
-            <strong>مدير المعمل المسؤول:</strong> أبو أحمد <br>
-            <strong>رقم تلفون الإدارة:</strong> 07700000000 <br>
+            <strong>مدير المعمل :</strong> عماد لقمان <br>
+            <strong>رقم تلفون الإدارة:</strong> 07510136788 و 07701885020 <br>
             <strong>نوع الأثاث:</strong> <span id="lbl_type"></span> <br>
             <strong>تاريخ الطلب:</strong> <span id="lbl_order"></span> <br>
             <strong>تاريخ الإنتاج:</strong> <span id="lbl_prod"></span>
@@ -69,15 +68,15 @@
 </div>
 
 <div id="customer-view">
-    <div class="customer-title">معمل الأثاث والنجارة الفاخرة</div>
+    <div class="customer-title">معمل نجارة ابو علي</div>
     <div class="customer-subtitle">شهادة الضمان وبطاقة أصالة المنتج المعتمدة</div>
     
     <div class="info-box">
         <div class="info-row"><strong>نوع قطعة الأثاث:</strong> <span id="c_type"></span></div>
         <div class="info-row"><strong>تاريخ طلب الزبون:</strong> <span id="c_order"></span></div>
         <div class="info-row"><strong>تاريخ الإنتاج والجاهزية:</strong> <span id="c_prod"></span></div>
-        <div class="info-row"><strong>إدارة المعمل المسؤول:</strong> أبو أحمد</div>
-        <div class="info-row"><strong>رقم هاتف الإدارة:</strong> 07700000000</div>
+        <div class="info-row"><strong>إدارة المعمل المسؤول:</strong> عماد لقمان</div>
+        <div class="info-row"><strong>رقم هاتف الإدارة:</strong> 07510136788 و 07701885020 </div>
     </div>
     
     <div id="image-container"></div>
@@ -85,10 +84,8 @@
 </div>
 
 <script>
-    // وضع تاريخ اليوم تلقائياً
     document.getElementById('production_date').valueAsDate = new Date();
 
-    // فحص الرابط: إذا كان يحتوي على بيانات زبون، يتم إخفاء لوحة التحكم وإظهار الصفحة الخاصة فوراً
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('view')) {
         document.getElementById('admin-view').style.display = 'none';
@@ -121,15 +118,12 @@
         document.getElementById('lbl_order').innerText = orderDate;
         document.getElementById('lbl_prod').innerText = prodDate;
         
-        // بناء رابط ذكي يوجه الموبايل إلى "الصفحة الخاصة بالزبون" بداخل نفس الملف
-        // قمنا بنقل الرابط إلى مسار الملف الحالي مع تمرير البيانات كمتغيرات آمنة وخفيفة
-        const currentFileUrl = window.location.href.split('?')[0];
-        const finalLink = `${currentFileUrl}?view=customer&type=${encodeURIComponent(type)}&order=${encodeURIComponent(orderDate)}&prod=${encodeURIComponent(prodDate)}&img=${encodeURIComponent(imgUrl)}`;
+        // تم ربط الكود برابط حسابك الحقيقي والمباشر بنجاح
+        const fixedLink = `https://abdullah-dhanoun.github.io/barcode/barcode.html?view=customer&type=${encodeURIComponent(type)}&order=${encodeURIComponent(orderDate)}&prod=${encodeURIComponent(prodDate)}&img=${encodeURIComponent(imgUrl)}`;
 
-        // توليد الباركود بشكل خفيف ونظيف لتقرأه الكاميرا فوراً
         var qr = new QRious({
             element: document.getElementById('qr-canvas'),
-            value: finalLink,
+            value: fixedLink,
             size: 160
         });
 
